@@ -16,24 +16,26 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
     private String fullName;
     @Column(unique = true)
     private String username;
 
     private String password;
+
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "tb_user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private final Set<Role> roles = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
+
 
     public User() {
     }
 
-    public User(String name, String username, String password) {
-        this.fullName = name;
+    public User(String fullname, String username, String password) {
+        this.fullName = fullname;
         this.username = username;
         this.password = password;
     }
@@ -73,6 +75,11 @@ public class User implements Serializable {
     public Set<Role> getRoles() {
         return roles;
     }
+
+    public void setRoles(Role roleToAdd) {
+        this.roles.add(roleToAdd);
+    }
+
 
     @Override
     public boolean equals(Object o) {
