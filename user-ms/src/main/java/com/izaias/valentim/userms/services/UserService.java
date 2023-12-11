@@ -30,13 +30,15 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+    public Role getEmployeeRole() {
+        String roleName = "ROLE_EMPLOYEE";
+        return roleRepository.findRoleByRoleName(roleName).orElse(null);
     }
 
     public ResponseEntity<?> createUser(User userToCreate) {
-        Role add = getAllRoles().get(0);
-        userToCreate.setRoles(add);
+        Role employeeRole = getEmployeeRole();
+
+        userToCreate.setRoles(employeeRole);
         String pass = userToCreate.getPassword();
         System.out.println(pass);
         String passWordEncript = passwordEncoder.encode(pass);
@@ -45,20 +47,31 @@ public class UserService {
         userRepository.save(userToCreate);
         URI readerLocation = ServletUriComponentsBuilder
                 .fromCurrentRequest()
-                .query("cpf={cpf}")
+                .query("id={id}")
                 .buildAndExpand(userToCreate.getId())
                 .toUri();
         return ResponseEntity.created(readerLocation).build();
     }
 
+    public ResponseEntity<UserDTO> addNewRoleToUser(String username, String roleName) {
+        User searchUser = userRepository.findUserByUsername(username).orElse(null);
+        Role roleToAdd = roleRepository.findRoleByRoleName(roleName).orElse(null);
+        if (searchUser != null && roleToAdd != null) {
+            searchUser.setRoles(roleToAdd);
+            userRepository.save(searchUser);
+            UserDTO userToReturn = new UserDTO(searchUser);
+            return ResponseEntity.ok().body(userToReturn);
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
     public ResponseEntity<UserDTO> findUserByUsername(String username) {
-        User searchUser = userRepository.findUserByUsername(username);
+        User searchUser = userRepository.findUserByUsername(username).orElse(null);
         if (searchUser != null) {
             UserDTO userToReturn = new UserDTO(searchUser);
             return ResponseEntity.ok().body(userToReturn);
         }
         return ResponseEntity.notFound().build();
-
     }
 
     public ResponseEntity<List<UserDTO>> getAllUser() {
@@ -72,5 +85,13 @@ public class UserService {
         return ResponseEntity.ok().body(allUsersDTO);
     }
 
+    public boolean deleteUser(String username) {
 
+        User searchUser = userRepository.findUserByUsername(username).orElse(null);
+        if (searchUser != null) {
+            userRepository.delete(searchUser);
+            return true;
+        }
+        return false;
+    }
 }
