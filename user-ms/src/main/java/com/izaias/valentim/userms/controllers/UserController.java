@@ -30,10 +30,20 @@ public class UserController {
         return userService.findUserByUsername(username);
     }
 
-    @PostMapping
+    @PostMapping(value = "/")
     public ResponseEntity<?> createUser(@RequestBody User userToAdd) {
         return userService.createUser(userToAdd);
     }
 
+    @PatchMapping(value = "/{username}/{rolename}/")
+    public ResponseEntity<UserDTO> addNewRoleUser(@PathVariable String username, @PathVariable String rolename) {
+        return userService.addNewRoleToUser(username, rolename);
+    }
 
+    @DeleteMapping(value = "/{username}/")
+    public ResponseEntity<?> deleteUser(@PathVariable String username) {
+        if (userService.deleteUser(username))
+            return ResponseEntity.noContent().build();
+        return ResponseEntity.notFound().build();
+    }
 }
