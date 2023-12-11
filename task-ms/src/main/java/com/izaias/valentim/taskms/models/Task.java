@@ -23,6 +23,11 @@ public class Task implements Serializable {
 
     public Task() {
     }
+    public Task(String consignorUsername, String nameTask, String detailTask) {
+        this.consignorUsername = consignorUsername;
+        this.nameTask = nameTask;
+        this.detailTask = detailTask;
+    }
 
     public long getId() {
         return id;
