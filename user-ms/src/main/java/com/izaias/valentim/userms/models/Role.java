@@ -13,6 +13,7 @@ public class Role implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @Column(unique = true)
     private String roleName;
 
     public Role() {
@@ -46,8 +47,4 @@ public class Role implements Serializable {
         return Objects.equals(roleName, role.roleName);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(roleName);
-    }
 }
