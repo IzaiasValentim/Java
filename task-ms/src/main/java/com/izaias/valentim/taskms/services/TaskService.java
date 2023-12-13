@@ -32,5 +32,15 @@ public class TaskService {
     public ResponseEntity<Task> createNewTask(Task taskToCreate){
         return ResponseEntity.ok().body(taskRepository.save(taskToCreate));
     }
+    public ResponseEntity<Task> includeUsersToTask(Long id_task, List<String> usernames){
+        Task searchTask = taskRepository.findById(id_task).orElse(null);
+        if(searchTask != null){
+            usernames.forEach(searchTask::setNewTargetUsername);
+            taskRepository.save(searchTask);
+            return ResponseEntity.ok().body(searchTask);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 
 }

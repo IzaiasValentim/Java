@@ -1,6 +1,7 @@
 package com.izaias.valentim.taskms.controllers;
 
 import com.izaias.valentim.taskms.models.Task;
+import com.izaias.valentim.taskms.models.modelsToRequests.Usernames;
 import com.izaias.valentim.taskms.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,9 @@ public class TaskController {
     public ResponseEntity<Task> createNewTask(@RequestBody Task taskToCreate) {
         return taskService.createNewTask(taskToCreate);
     }
-
+    @PostMapping(value = "{id_task}/include/users/")
+    public ResponseEntity<Task> includeUsersOnTask(@PathVariable Long id_task, @RequestBody Usernames usernames){
+        return taskService.includeUsersToTask(id_task, usernames.getUsernames());
+    }
 
 }
