@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: ms-gateway
+  cloud:
+    gateway:
+      routes:
+        # users-ms
+      - id: user-ms
+        uri: lb://USER-MS
+        predicates:
+          - Path=/users/**
+
+        # apenas para teste das roles
+      - id: user-ms
+        uri: lb://USER-MS
+        predicates:
+          - Path=/roles/**
+
+        # task-ms
+      - id: task-ms
+        uri: lb://TASK-MS
+        predicates:
+          - Path=/tasks/**
+
+server:
+  port: 8765
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
