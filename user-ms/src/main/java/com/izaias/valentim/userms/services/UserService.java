@@ -1,10 +1,12 @@
 package com.izaias.valentim.userms.services;
 
 import com.izaias.valentim.userms.models.DTO.UserDTO;
+import com.izaias.valentim.userms.models.DTO.UsernameResponseFeign;
 import com.izaias.valentim.userms.models.Role;
 import com.izaias.valentim.userms.models.User;
 import com.izaias.valentim.userms.repositories.RoleRepository;
 import com.izaias.valentim.userms.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,7 +15,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -34,7 +38,7 @@ public class UserService {
         String roleName = "ROLE_EMPLOYEE";
         return roleRepository.findRoleByRoleName(roleName).orElse(null);
     }
-
+    @Transactional
     public ResponseEntity<?> createUser(User userToCreate) {
         Role employeeRole = getEmployeeRole();
 
@@ -52,7 +56,7 @@ public class UserService {
                 .toUri();
         return ResponseEntity.created(readerLocation).build();
     }
-
+    @Transactional
     public ResponseEntity<UserDTO> addNewRoleToUser(String username, String roleName) {
         User searchUser = userRepository.findUserByUsername(username).orElse(null);
         Role roleToAdd = roleRepository.findRoleByRoleName(roleName).orElse(null);
@@ -84,7 +88,7 @@ public class UserService {
         });
         return ResponseEntity.ok().body(allUsersDTO);
     }
-
+    @Transactional
     public boolean deleteUser(String username) {
 
         User searchUser = userRepository.findUserByUsername(username).orElse(null);
@@ -93,5 +97,14 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    public Set<UsernameResponseFeign> verifyIfUsersExistsByUsernames(List<String> usernamesToVerify) {
+        Set<UsernameResponseFeign> listOfValidUsers = new HashSet<>();
+        usernamesToVerify.forEach
+                (username -> userRepository.findUserByUsername(username).ifPresent(
+                        user -> listOfValidUsers.add(new UsernameResponseFeign(user))
+        ));
+        return listOfValidUsers;
     }
 }
