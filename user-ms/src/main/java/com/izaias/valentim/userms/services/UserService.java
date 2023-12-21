@@ -1,6 +1,7 @@
 package com.izaias.valentim.userms.services;
 
 import com.izaias.valentim.userms.models.DTO.UserDTO;
+import com.izaias.valentim.userms.models.DTO.UsernameResponseFeign;
 import com.izaias.valentim.userms.models.Role;
 import com.izaias.valentim.userms.models.User;
 import com.izaias.valentim.userms.repositories.RoleRepository;
@@ -13,7 +14,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -93,5 +96,14 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    public Set<UsernameResponseFeign> verifyIfUsersExistsByUsernames(List<String> usernamesToVerify) {
+        Set<UsernameResponseFeign> listOfValidUsers = new HashSet<>();
+        usernamesToVerify.forEach
+                (username -> userRepository.findUserByUsername(username).ifPresent(
+                        user -> listOfValidUsers.add(new UsernameResponseFeign(user))
+        ));
+        return listOfValidUsers;
     }
 }
