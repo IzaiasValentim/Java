@@ -33,7 +33,7 @@ public class UserController {
         return userService.findUserByUsername(username);
     }
 
-    @GetMapping(value = "verify")
+    @PostMapping(value = "verify/")
     public ResponseEntity<Set<UsernameResponseFeign>> verifyListOfUsernames(@RequestBody Usernames usernames) {
         return ResponseEntity.ok().body(userService.verifyIfUsersExistsByUsernames(usernames.getUsernames()));
     }
