@@ -1,13 +1,16 @@
 package com.izaias.valentim.userms.controllers;
 
 import com.izaias.valentim.userms.models.DTO.UserDTO;
+import com.izaias.valentim.userms.models.DTO.UsernameResponseFeign;
 import com.izaias.valentim.userms.models.User;
+import com.izaias.valentim.userms.models.modelsToRequests.Usernames;
 import com.izaias.valentim.userms.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = "users")
@@ -28,6 +31,11 @@ public class UserController {
     @GetMapping(value = "search")
     public ResponseEntity<UserDTO> getUserByUsername(@RequestParam String username) {
         return userService.findUserByUsername(username);
+    }
+
+    @GetMapping(value = "verify")
+    public ResponseEntity<Set<UsernameResponseFeign>> verifyListOfUsernames(@RequestBody Usernames usernames) {
+        return ResponseEntity.ok().body(userService.verifyIfUsersExistsByUsernames(usernames.getUsernames()));
     }
 
     @PostMapping(value = "/")
