@@ -6,6 +6,7 @@ import com.izaias.valentim.userms.models.Role;
 import com.izaias.valentim.userms.models.User;
 import com.izaias.valentim.userms.repositories.RoleRepository;
 import com.izaias.valentim.userms.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -37,7 +38,7 @@ public class UserService {
         String roleName = "ROLE_EMPLOYEE";
         return roleRepository.findRoleByRoleName(roleName).orElse(null);
     }
-
+    @Transactional
     public ResponseEntity<?> createUser(User userToCreate) {
         Role employeeRole = getEmployeeRole();
 
@@ -55,7 +56,7 @@ public class UserService {
                 .toUri();
         return ResponseEntity.created(readerLocation).build();
     }
-
+    @Transactional
     public ResponseEntity<UserDTO> addNewRoleToUser(String username, String roleName) {
         User searchUser = userRepository.findUserByUsername(username).orElse(null);
         Role roleToAdd = roleRepository.findRoleByRoleName(roleName).orElse(null);
@@ -87,7 +88,7 @@ public class UserService {
         });
         return ResponseEntity.ok().body(allUsersDTO);
     }
-
+    @Transactional
     public boolean deleteUser(String username) {
 
         User searchUser = userRepository.findUserByUsername(username).orElse(null);
