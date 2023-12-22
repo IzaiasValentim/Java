@@ -30,6 +30,9 @@ public class UserController {
 
     @GetMapping(value = "search")
     public ResponseEntity<UserDTO> getUserByUsername(@RequestParam String username) {
+        if (username.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
         return userService.findUserByUsername(username);
     }
 
@@ -45,11 +48,17 @@ public class UserController {
 
     @PatchMapping(value = "/{username}/{rolename}/")
     public ResponseEntity<UserDTO> addNewRoleUser(@PathVariable String username, @PathVariable String rolename) {
+        if (username.isEmpty() || rolename.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
         return userService.addNewRoleToUser(username, rolename);
     }
 
     @DeleteMapping(value = "/{username}/")
     public ResponseEntity<?> deleteUser(@PathVariable String username) {
+        if (username.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
         userService.deleteUser(username);
         return ResponseEntity.noContent().build();
     }
