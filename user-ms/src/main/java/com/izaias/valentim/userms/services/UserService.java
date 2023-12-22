@@ -6,6 +6,9 @@ import com.izaias.valentim.userms.models.Role;
 import com.izaias.valentim.userms.models.User;
 import com.izaias.valentim.userms.repositories.RoleRepository;
 import com.izaias.valentim.userms.repositories.UserRepository;
+import com.izaias.valentim.userms.services.customExceptions.RoleNotFoundException;
+import com.izaias.valentim.userms.services.customExceptions.UserAlreadyExistException;
+import com.izaias.valentim.userms.services.customExceptions.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -36,12 +39,17 @@ public class UserService {
 
     public Role getEmployeeRole() {
         String roleName = "ROLE_EMPLOYEE";
-        return roleRepository.findRoleByRoleName(roleName).orElse(null);
+        return roleRepository.findRoleByRoleName(roleName)
+                .orElseThrow(() -> new RoleNotFoundException("Role not found"));
     }
+
     @Transactional
     public ResponseEntity<?> createUser(User userToCreate) {
-        Role employeeRole = getEmployeeRole();
 
+        if (userRepository.findUserByUsername(userToCreate.getUsername()).isPresent()) {
+            throw new UserAlreadyExistException("There is already a user with this username");
+        }
+        Role employeeRole = getEmployeeRole();
         userToCreate.setRoles(employeeRole);
         String pass = userToCreate.getPassword();
         System.out.println(pass);
@@ -55,27 +63,29 @@ public class UserService {
                 .buildAndExpand(userToCreate.getId())
                 .toUri();
         return ResponseEntity.created(readerLocation).build();
+
     }
+
     @Transactional
     public ResponseEntity<UserDTO> addNewRoleToUser(String username, String roleName) {
-        User searchUser = userRepository.findUserByUsername(username).orElse(null);
-        Role roleToAdd = roleRepository.findRoleByRoleName(roleName).orElse(null);
-        if (searchUser != null && roleToAdd != null) {
-            searchUser.setRoles(roleToAdd);
-            userRepository.save(searchUser);
-            UserDTO userToReturn = new UserDTO(searchUser);
-            return ResponseEntity.ok().body(userToReturn);
-        }
-        return ResponseEntity.badRequest().build();
+        User searchUser = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with this username"));
+
+        Role roleToAdd = roleRepository.findRoleByRoleName(roleName)
+                .orElseThrow(() -> new RoleNotFoundException("Role not found"));
+
+        searchUser.setRoles(roleToAdd);
+        userRepository.save(searchUser);
+        UserDTO userToReturn = new UserDTO(searchUser);
+        return ResponseEntity.ok().body(userToReturn);
     }
 
     public ResponseEntity<UserDTO> findUserByUsername(String username) {
-        User searchUser = userRepository.findUserByUsername(username).orElse(null);
-        if (searchUser != null) {
-            UserDTO userToReturn = new UserDTO(searchUser);
-            return ResponseEntity.ok().body(userToReturn);
-        }
-        return ResponseEntity.notFound().build();
+        User searchUser = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with this username"));
+
+        UserDTO userToReturn = new UserDTO(searchUser);
+        return ResponseEntity.ok().body(userToReturn);
     }
 
     public ResponseEntity<List<UserDTO>> getAllUser() {
@@ -88,15 +98,13 @@ public class UserService {
         });
         return ResponseEntity.ok().body(allUsersDTO);
     }
-    @Transactional
-    public boolean deleteUser(String username) {
 
-        User searchUser = userRepository.findUserByUsername(username).orElse(null);
-        if (searchUser != null) {
-            userRepository.delete(searchUser);
-            return true;
-        }
-        return false;
+    @Transactional
+    public void deleteUser(String username) {
+        User searchUser = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with this username"));
+
+        userRepository.delete(searchUser);
     }
 
     public Set<UsernameResponseFeign> verifyIfUsersExistsByUsernames(List<String> usernamesToVerify) {
@@ -104,7 +112,7 @@ public class UserService {
         usernamesToVerify.forEach
                 (username -> userRepository.findUserByUsername(username).ifPresent(
                         user -> listOfValidUsers.add(new UsernameResponseFeign(user))
-        ));
+                ));
         return listOfValidUsers;
     }
 }

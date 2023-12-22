@@ -2,6 +2,8 @@ package com.izaias.valentim.userms.services;
 
 import com.izaias.valentim.userms.models.Role;
 import com.izaias.valentim.userms.repositories.RoleRepository;
+import com.izaias.valentim.userms.services.customExceptions.RoleAlreadyExistException;
+import com.izaias.valentim.userms.services.customExceptions.RoleNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class RoleService {
     }
 
     public ResponseEntity<?> createNewRole(String roleName) {
+        if (roleRepository.findRoleByRoleName(roleName).isPresent())
+            throw new RoleAlreadyExistException("There is already a user with this username");
         Role objectRole = new Role();
         objectRole.setRoleName(roleName);
         roleRepository.save(objectRole);
@@ -36,12 +40,11 @@ public class RoleService {
     }
 
     public boolean deleteRole(String roleName) {
-        Role roleSearch = roleRepository.findRoleByRoleName(roleName).orElse(null);
-        if (roleSearch != null) {
-            roleRepository.delete(roleSearch);
-            return true;
-        }
-        return false;
+        Role roleSearch = roleRepository.findRoleByRoleName(roleName)
+                .orElseThrow(() -> new RoleNotFoundException("Role not found"));
+
+        roleRepository.delete(roleSearch);
+        return true;
     }
 
 }
